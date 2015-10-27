@@ -35,18 +35,28 @@ object JobServer {
 
   // Allow custom function to create ActorSystem.  An example of why this is useful:
   // we can have something that stores the ActorSystem so it could be shut down easily later.
-  def start(args: Array[String], makeSystem: Config => ActorSystem) {
-    val defaultConfig = ConfigFactory.load()
-    val config = if (args.length > 0) {
-      val configFile = new File(args(0))
-      if (!configFile.exists()) {
-        println("Could not find configuration file " + configFile)
-        sys.exit(1)
-      }
-      ConfigFactory.parseFile(configFile).withFallback(defaultConfig).resolve()
-    } else {
-      defaultConfig
-    }
+
+ /* SnappyData notes why we need makeConfig.
+
+   Settings for jobserver overriding the application.conf or bootProperties.
+   ideally there should have been reference.conf in the jobserver packaging instead of application.conf.
+
+   in generic case, user supplied application.conf will be picked up if found first in the classpath.
+   in snappy embeded mode properties file will be parsed much earlier & converted into bootProperties.
+   user won't need application.conf in snappydata's case.
+
+   to provide snappy defaults "reference.conf" should be used if we too move to typesafe.Config
+   otherwise a separate file can be created "jobserver-reference.conf" which will be injected
+   just before defaultConfig.
+
+   ref:
+   http://kamon.io/introduction/configuration/
+   https://github.com/typesafehub/config
+ */
+
+  def start(args: Array[String], makeConfig: (Array[String]) => Config, makeSystem: Config => ActorSystem) {
+    val config = makeConfig(args)
+
     logger.info("Starting JobServer with config {}", config.getConfig("spark").root.render())
     logger.info("Spray config: {}", config.getConfig("spray.can.server").root.render())
     val port = config.getInt("spark.jobserver.port")
@@ -117,7 +127,28 @@ object JobServer {
     }
   }
 
+  /**
+   * This will allow a custom Config object to be built by the user from disparate sources.
+   *
+   * @param args - arguments passed to start or commandline.
+   * @return a Config object that will only be used "as is". User's responsibility to call
+   *         ConfigFactory.load and use it as .withFallback.
+   */
+  private def getConfig(args: Array[String]) : Config = {
+    val defaultConfig = ConfigFactory.load()
+    if (args.length > 0) {
+      val configFile = new File(args(0))
+      if (!configFile.exists()) {
+        println("Could not find configuration file " + configFile)
+        sys.exit(1)
+      }
+      ConfigFactory.parseFile(configFile).withFallback(defaultConfig).resolve()
+    } else {
+      defaultConfig
+    }
+  }
+
   def main(args: Array[String]) {
-    start(args, config => ActorSystem("JobServer", config))
+    start(args, getConfig, config => ActorSystem("JobServer", config))
   }
 }
