@@ -109,6 +109,8 @@ sourceSets.test.scala.srcDirs = ['akka-app/test', 'job-server/test',
 sourceSets.main.java.srcDirs = []
 sourceSets.test.java.srcDirs = []
 
+sourceSets.main.resources.srcDirs = ['job-server/src/main/resources', 'job-server-api/src/main/resources', 'akka-app/src/main/resources', 'job-server-extras/src/main/resources']
+
 dependencies {
 //  compile project(':spark-jobserver' + scalaBinaryVersion)
 }
