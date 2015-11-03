@@ -14,3 +14,5 @@ config/*.sh
 job-server/config/*.conf
 job-server/config/*.sh
 metastore_db/
+*.iml
+build-artifacts/
