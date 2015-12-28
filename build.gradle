@@ -1,105 +1,69 @@
 apply plugin: 'scala'
 
+version = '1.6.0-SNAPSHOT'
 
-allprojects {
-  // We want to see all test results.  This is equivalatent to setting --continue
-  // on the command line.
-  gradle.startParameter.continueOnFailure = true
-
-  repositories {
-    jcenter()
-    maven { url "https://repository.apache.org/content/repositories/releases" }
-    maven { url "https://repository.jboss.org/nexus/content/repositories/releases" }
-    maven { url "https://repo.eclipse.org/content/repositories/paho-releases" }
-    maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
-    maven { url "https://oss.sonatype.org/content/repositories/orgspark-project-1113" }
-    maven { url "http://repository.mapr.com/maven" }
-    maven { url "https://repo.spring.io/libs-release" }
-    maven { url "http://maven.twttr.com" }
-    maven { url "http://repository.apache.org/snapshots" }
-  }
-
-  apply plugin: 'scala'
-  apply plugin: 'maven'
-  //apply plugin: 'com.github.maiflai.scalatest'
-
-  // apply compiler options
-  sourceCompatibility = 1.7
-  targetCompatibility = 1.7
-
-  compileJava.options.encoding = 'UTF-8'
-  compileScala.options.encoding = 'UTF-8'
-  compileJava.options.compilerArgs << '-Xlint:all,-serial,-path'
-
-  group = 'org.apache.spark'
-  version = '1.5.0-SNAPSHOT.1'
-
-  ext {
-    nettyGroup = 'io.netty'
-    scalaMacros = 'org.scalamacros'
-    scalaTest = 'org.scalatest'
-    sparkVersion = "1.5.1"
-    if (rootProject.name == 'spark-jobserver') {
-      subprojectBase = ':'
-    } else {
-      subprojectBase = ':spark-jobserver:'
-    }
-  }
-
-  dependencies {
-    compile 'org.scala-lang:scala-library:' + scalaVersion
-    compile 'org.scala-lang:scala-reflect:' + scalaVersion
-    compile 'org.scala-lang:scala-compiler:' + scalaVersion
-
-    //always use stock spark so that snappy extensions don't get accidently included
-    // here in jobserver code.
-    provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
-      exclude(group: nettyGroup)
-      exclude(group: scalaMacros)
-    }
-    provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
-      exclude(group: nettyGroup)
-      exclude(group: scalaMacros)
-    }
-    provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
-      exclude(group: nettyGroup)
-      exclude(group: scalaMacros)
-    }
-    provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
-      exclude(group: nettyGroup)
-      exclude(group: scalaMacros)
-      exclude(group: scalaTest)
-    }
-
-    //akka-appDeps
-    compile "com.typesafe.akka:akka-slf4j_${scalaBinaryVersion}:2.3.4"
-    compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.2"
-    compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.3"
-    compile "io.spray:spray-routing_${scalaBinaryVersion}:1.3.3"
-    compile "io.spray:spray-client_${scalaBinaryVersion}:1.3.3"
-    compile "com.yammer.metrics:metrics-core:2.2.0"
-
-    compile 'org.joda:joda-convert:1.2'
-    compile 'joda-time:joda-time:2.2'
-
-    compile "com.typesafe.slick:slick_${scalaBinaryVersion}:2.1.0"
-    compile 'com.h2database:h2:1.3.170'
-    compile 'commons-dbcp:commons-dbcp:1.4'
-    compile 'ch.qos.logback:logback-classic:1.0.7'
-    compile 'org.apache.shiro:shiro-core:1.2.4'
-
-    compile 'com.typesafe:config:1.2.1'
-
-    testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
-    testCompile "com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:2.3.4"
-    testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:1.3.2"
-
-    testRuntime 'org.pegdown:pegdown:1.1.0'
+ext {
+  sparkVersion = '1.5.1'
+  nettyGroup = 'io.netty'
+  scalaMacros = 'org.scalamacros'
+  scalaTest = 'org.scalatest'
+  if (rootProject.name == 'spark-jobserver') {
+    subprojectBase = ':'
+  } else {
+    subprojectBase = ':spark-jobserver:'
   }
 }
 
-// default output directory like in sbt/maven
-buildDir = 'build-artifacts/scala-' + scalaBinaryVersion
+dependencies {
+  compile 'org.scala-lang:scala-library:' + scalaVersion
+  compile 'org.scala-lang:scala-reflect:' + scalaVersion
+  compile 'org.scala-lang:scala-compiler:' + scalaVersion
+
+  //always use stock spark so that snappy extensions don't get accidently included
+  // here in jobserver code.
+  provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
+    exclude(group: nettyGroup)
+    exclude(group: scalaMacros)
+  }
+  provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
+    exclude(group: nettyGroup)
+    exclude(group: scalaMacros)
+  }
+  provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
+    exclude(group: nettyGroup)
+    exclude(group: scalaMacros)
+  }
+  provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
+    exclude(group: nettyGroup)
+    exclude(group: scalaMacros)
+    exclude(group: scalaTest)
+  }
+
+  //akka-appDeps
+  compile "com.typesafe.akka:akka-slf4j_${scalaBinaryVersion}:2.3.4"
+  compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.2"
+  compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.3"
+  compile "io.spray:spray-routing_${scalaBinaryVersion}:1.3.3"
+  compile "io.spray:spray-client_${scalaBinaryVersion}:1.3.3"
+  compile "com.yammer.metrics:metrics-core:2.2.0"
+
+  compile 'org.joda:joda-convert:1.2'
+  compile 'joda-time:joda-time:2.2'
+
+  compile "com.typesafe.slick:slick_${scalaBinaryVersion}:2.1.0"
+  compile 'com.h2database:h2:1.3.170'
+  compile 'commons-dbcp:commons-dbcp:1.4'
+  compile 'ch.qos.logback:logback-classic:1.0.7'
+  compile 'org.apache.shiro:shiro-core:1.2.4'
+
+  compile 'com.typesafe:config:1.2.1'
+
+  testCompile "org.scalatest:scalatest_${scalaBinaryVersion}:2.2.1"
+  testCompile "com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:2.3.4"
+  testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:1.3.2"
+
+  testRuntime 'org.pegdown:pegdown:1.1.0'
+}
 
 sourceSets.main.scala.srcDirs = ['akka-app/src', 'job-server-api/src', 'job-server/src',
                                  'job-server-extras/src']
@@ -109,8 +73,7 @@ sourceSets.test.scala.srcDirs = ['akka-app/test', 'job-server/test',
 sourceSets.main.java.srcDirs = []
 sourceSets.test.java.srcDirs = []
 
-sourceSets.main.resources.srcDirs = ['job-server/src/main/resources', 'job-server-api/src/main/resources', 'akka-app/src/main/resources', 'job-server-extras/src/main/resources']
-
-dependencies {
-//  compile project(':spark-jobserver' + scalaBinaryVersion)
-}
+sourceSets.main.resources.srcDirs = ['job-server/src/main/resources',
+                                     'job-server-api/src/main/resources',
+                                     'akka-app/src/main/resources',
+                                     'job-server-extras/src/main/resources']
