@@ -3,7 +3,7 @@ apply plugin: 'scala'
 version = '1.6.0-SNAPSHOT'
 
 ext {
-  sparkVersion = '1.5.1'
+  sparkVersion = '1.6.0'
   nettyGroup = 'io.netty'
   scalaMacros = 'org.scalamacros'
   scalaTest = 'org.scalatest'
@@ -19,27 +19,39 @@ dependencies {
   compile 'org.scala-lang:scala-reflect:' + scalaVersion
   compile 'org.scala-lang:scala-compiler:' + scalaVersion
 
-  //always use stock spark so that snappy extensions don't get accidently included
-  // here in jobserver code.
+  // always use stock spark so that snappy extensions don't get accidently
+  // included here in jobserver code.
   provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: scalaTest)
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
 
-  //akka-appDeps
+  // akka-appDeps
   compile "com.typesafe.akka:akka-slf4j_${scalaBinaryVersion}:2.3.4"
   compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.2"
   compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.3"
