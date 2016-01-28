@@ -1,6 +1,11 @@
-[![Build Status](https://travis-ci.org/spark-jobserver/spark-jobserver.svg?branch=master)](https://travis-ci.org/spark-jobserver/spark-jobserver)
+### SnappyData fork of spark-jobserver
 
-[![Join the chat at https://gitter.im/spark-jobserver/spark-jobserver](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/spark-jobserver/spark-jobserver?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+This is a fork of [spark-jobserver](https://github.com/spark-jobserver/spark-jobserver) project
+having a few changes by SnappyData to work better in the integrated snappydata product.
+
+- Allow passing in configuration externally to JobServer.start
+- Additions for integrated gradle build from top-level snappydata project.
+
 
 spark-jobserver provides a RESTful interface for submitting and managing [Apache Spark](http://spark-project.org) jobs, jars, and job contexts.
 This repo contains the complete Spark job server project, including unit tests and deploy scripts.
