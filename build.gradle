@@ -14,6 +14,18 @@ ext {
   }
 }
 
+scalaStyle {
+  configLocation = "${projectDir}/scalastyle-config.xml"
+  inputEncoding = 'UTF-8'
+  outputEncoding = 'UTF-8'
+  outputFile = "${buildDir}/scalastyle-output.xml"
+  includeTestSourceDirectory = false
+  source = 'src/main/scala'
+  testSource = 'src/test/scala'
+  failOnViolation = true
+  failOnWarning = false
+}
+
 dependencies {
   compile 'org.scala-lang:scala-library:' + scalaVersion
   compile 'org.scala-lang:scala-reflect:' + scalaVersion
