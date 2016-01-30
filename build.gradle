@@ -1,6 +1,6 @@
 apply plugin: 'scala'
 
-version = '1.6.0-SNAPSHOT'
+version = '0.6.0-SNAPSHOT'
 
 ext {
   sparkVersion = '1.6.0'
@@ -101,3 +101,13 @@ sourceSets.main.resources.srcDirs = ['job-server/src/main/resources',
                                      'job-server-api/src/main/resources',
                                      'akka-app/src/main/resources',
                                      'job-server-extras/src/main/resources']
+
+task packageScalaDocs(type: Jar, dependsOn: scaladoc) {
+  classifier = 'javadoc'
+  from scaladoc
+}
+if (rootProject.hasProperty('enablePublish')) {
+  artifacts {
+    archives packageScalaDocs, packageSources
+  }
+}
