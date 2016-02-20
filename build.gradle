@@ -76,6 +76,7 @@ dependencies {
 
   compile "com.typesafe.slick:slick_${scalaBinaryVersion}:2.1.0"
   compile 'com.h2database:h2:1.3.170'
+  compile 'commons-pool:commons-pool:1.6'
   compile 'commons-dbcp:commons-dbcp:1.4'
   compile 'ch.qos.logback:logback-classic:1.0.7'
   compile 'org.apache.shiro:shiro-core:1.2.4'
