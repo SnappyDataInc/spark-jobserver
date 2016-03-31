@@ -1,5 +1,7 @@
 package spark.jobserver
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor.{ ActorSystem, ActorRef }
 import akka.pattern.ask
 import akka.util.Timeout
@@ -93,7 +95,7 @@ class WebApi(system: ActorSystem,
              dataManager: ActorRef,
              supervisor: ActorRef,
              jobInfo: ActorRef)
-    extends HttpService with CommonRoutes with DataRoutes with SJSAuthenticator {
+    extends HttpService with CommonRoutes with DataRoutes with SJSAuthenticator with CORSSupport {
   import CommonMessages._
   import ContextSupervisor._
   import scala.concurrent.duration._
@@ -104,7 +106,8 @@ class WebApi(system: ActorSystem,
 
   override def actorRefFactory: ActorSystem = system
   implicit val ec: ExecutionContext = system.dispatcher
-  implicit val ShortTimeout = Timeout(3 seconds)
+  implicit val ShortTimeout =
+    Timeout(config.getDuration("spark.jobserver.short-timeout", TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS)
   val DefaultSyncTimeout = Timeout(10 seconds)
   val DefaultJobLimit = 50
   val StatusKey = "status"
@@ -115,8 +118,10 @@ class WebApi(system: ActorSystem,
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  val myRoutes = jarRoutes ~ contextRoutes ~ jobRoutes ~
-                 dataRoutes ~ healthzRoutes ~ otherRoutes
+  val myRoutes = cors {
+    jarRoutes ~ contextRoutes ~ jobRoutes ~
+      dataRoutes ~ healthzRoutes ~ otherRoutes
+  }
 
   lazy val authenticator: AuthMagnet[AuthInfo] = {
     if (config.getBoolean("shiro.authentication")) {

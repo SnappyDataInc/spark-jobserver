@@ -13,6 +13,8 @@ It was originally started at [Ooyala](http://www.ooyala.com), but this is now th
 
 See [Troubleshooting Tips](doc/troubleshooting.md) as well as [Yarn tips](doc/yarn.md).
 
+Also see [Chinese docs / 中文](doc/chinese/job-server.md).
+
 ## Users
 
 (Please add yourself to this list!)
@@ -31,6 +33,7 @@ Spark Job Server is now included in Datastax Enterprise 4.8!
 - [Azavea](http://azavea.com)
 - [Maana](http://maana.io/)
 - [Newsweaver](https://www.newsweaver.com)
+- [Instaclustr](http://www.instaclustr.com)
 - [SnappyData](http://www.snappydata.io)
 
 ## Features
@@ -60,13 +63,22 @@ Spark Job Server is now included in Datastax Enterprise 4.8!
 | 0.5.1       | 1.3.0         |
 | 0.5.2       | 1.3.1         |
 | 0.6.0       | 1.4.1         |
-| master      | 1.5.1         |
+| 0.6.1       | 1.5.2         |
+| master      | 1.5.2         |
 
-For release notes, look in the `notes/` directory.  They should also be up on [ls.implicit.ly](http://ls.implicit.ly/spark-jobserver/spark-jobserver).
+For release notes, look in the `notes/` directory.  They should also be up on [notes.implicit.ly](http://notes.implicit.ly/search/spark-jobserver).
 
-## Quick Start
+## Getting Started with Spark Job Server
 
 The easiest way to get started is to try the [Docker container](doc/docker.md) which prepackages a Spark distribution with the job server and lets you start and deploy it.
+
+Alternatives:
+
+* Build and run Job Server in local [development mode](#development-mode) within SBT.
+* Deploy job server to a cluster.  There are two alternatives (see the [deployment section](#deployment)):
+  - `server_deploy.sh`  deploys job server to a directory on a remote host.
+  - `server_package.sh` deploys job server to a local directory, from which you can deploy the directory, or create a .tar.gz for Mesos or YARN deployment.
+* EC2 Deploy scripts - follow the instructions in [EC2](doc/EC2.md) to spin up a Spark cluster with job server and an example application.
 
 ## Development mode
 
@@ -124,6 +136,8 @@ curl will munge your line separator chars.  Like:
 
     curl --data-binary @my-job-config.json 'localhost:8090/jobs?appNam=...'
 
+NOTE2: If you want to send in UTF-8 chars, make sure you pass in a proper header to CURL for the encoding, otherwise it may assume an encoding which is not what you expect.
+
 From this point, you could asynchronously query the status and results:
 
     curl localhost:8090/jobs/5453779a-f004-45fc-a11d-a39dae0f9bf4
@@ -177,11 +191,11 @@ In your `build.sbt`, add this to use the job server jar:
 
         resolvers += "Job Server Bintray" at "https://dl.bintray.com/spark-jobserver/maven"
 
-        libraryDependencies += "spark.jobserver" %% "job-server-api" % "0.6.0" % "provided"
+        libraryDependencies += "spark.jobserver" %% "job-server-api" % "0.6.1" % "provided"
 
 If a SQL or Hive job/context is desired, you also want to pull in `job-server-extras`:
 
-    libraryDependencies += "spark.jobserver" %% "job-server-extras" % "0.6.0" % "provided"
+    libraryDependencies += "spark.jobserver" %% "job-server-extras" % "0.6.1" % "provided"
 
 For most use cases it's better to have the dependencies be "provided" because you don't want SBT assembly to include the whole job server jar.
 
@@ -316,7 +330,7 @@ curl -k --basic --user 'user:pw' https://localhost:8090/contexts
 
 ### Manual steps
 
-1. Copy `config/local.sh.template` to `<environment>.sh` and edit as appropriate.  NOTE: be sure to set SPARK_VERSION if you need to compile against a different version, ie. 1.4.1 for job server 0.6.0
+1. Copy `config/local.sh.template` to `<environment>.sh` and edit as appropriate.  NOTE: be sure to set SPARK_VERSION if you need to compile against a different version.
 2. Copy `config/shiro.ini.template` to `shiro.ini` and edit as appropriate. NOTE: only required when `authentication = on`
 3. Copy `config/local.conf.template` to `<environment>.conf` and edit as appropriate.
 4. `bin/server_deploy.sh <environment>` -- this packages the job server along with config files and pushes
