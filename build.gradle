@@ -35,41 +35,49 @@ dependencies {
 
   // always use stock spark so that snappy extensions don't get accidently
   // included here in jobserver code.
-  provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
-  }
-  provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
-  }
-  provided("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
-  }
-  provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
-  }
-  provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: scalaTest)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
+  if (new File(rootDir, 'spark/build.gradle').exists()) {
+    compile project(':snappy-spark:snappy-spark-core_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-sql_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-mllib_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-streaming_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-hive_' + scalaBinaryVersion)
+  } else {
+    provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: 'org.scala-lang', module: 'scala-library')
+      exclude(group: 'org.scala-lang', module: 'scala-reflect')
+      exclude(group: 'org.scala-lang', module: 'scala-compiler')
+    }
+    provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: 'org.scala-lang', module: 'scala-library')
+      exclude(group: 'org.scala-lang', module: 'scala-reflect')
+      exclude(group: 'org.scala-lang', module: 'scala-compiler')
+    }
+    provided("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: 'org.scala-lang', module: 'scala-library')
+      exclude(group: 'org.scala-lang', module: 'scala-reflect')
+      exclude(group: 'org.scala-lang', module: 'scala-compiler')
+    }
+    provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: 'org.scala-lang', module: 'scala-library')
+      exclude(group: 'org.scala-lang', module: 'scala-reflect')
+      exclude(group: 'org.scala-lang', module: 'scala-compiler')
+    }
+    provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: scalaTest)
+      exclude(group: 'org.scala-lang', module: 'scala-library')
+      exclude(group: 'org.scala-lang', module: 'scala-reflect')
+      exclude(group: 'org.scala-lang', module: 'scala-compiler')
+    }
   }
 
   // akka-appDeps
