@@ -28,7 +28,7 @@ class JobServerNamedRdds(val rddManager: ActorRef) extends NamedRdds {
     val result: RDD[T] = Await.result(future, timeout.duration) match {
       case Left(error: Throwable) =>
         throw new RuntimeException("Failed to get named RDD '" + name + "'", error)
-      case Right(rdd: RDD[T]) => refreshRdd(rdd)
+      case Right(rdd: RDD[_]) => refreshRdd(rdd.asInstanceOf[RDD[T]])
       case None =>
         // Try to generate the RDD and send the result of the operation to the rddManager.
         try {
