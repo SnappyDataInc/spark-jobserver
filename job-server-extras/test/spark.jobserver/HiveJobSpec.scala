@@ -2,6 +2,7 @@ package spark.jobserver
 
 import com.typesafe.config.{Config, ConfigFactory}
 import spark.jobserver.context.{HiveContextLike, SparkContextFactory}
+import spark.jobserver.io.{JobDAO, JobDAOActor}
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.hive.test.TestHiveContext
@@ -38,13 +39,14 @@ class HiveJobSpec extends ExtrasJobSpecBase(HiveJobSpec.getNewSystem) {
 
   before {
     dao = new InMemoryDAO
-    manager =
-      system.actorOf(JobManagerActor.props(dao, "test", HiveJobSpec.contextConfig, false))
+    daoActor = system.actorOf(JobDAOActor.props(dao))
+    manager = system.actorOf(JobManagerActor.props(
+                             HiveJobSpec.getContextConfig(false, HiveJobSpec.contextConfig)))
   }
 
   describe("Spark Hive Jobs") {
     it("should be able to create a Hive table, then query it using separate Hive-SQL jobs") {
-      manager ! JobManagerActor.Initialize
+      manager ! JobManagerActor.Initialize(daoActor, None)
       expectMsgClass(30 seconds, classOf[JobManagerActor.Initialized])
 
       uploadTestJar()
