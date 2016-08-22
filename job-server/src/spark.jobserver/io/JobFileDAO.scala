@@ -135,7 +135,7 @@ class JobFileDAO(config: Config) extends JobDAO {
     new File(rootDir, createJarName(appName, uploadTime) + ".jar").getAbsolutePath
 
   private def createJarName(appName: String, uploadTime: DateTime): String =
-    appName + "-" + uploadTime.toString().replace(':', '_')
+     appName + "_SNAPPY_JOB_SERVER_JAR_" + uploadTime.toString().replace(':', '_')
 
   override def saveJobInfo(jobInfo: JobInfo) {
     writeJobInfo(jobsOutputStream, jobInfo)
