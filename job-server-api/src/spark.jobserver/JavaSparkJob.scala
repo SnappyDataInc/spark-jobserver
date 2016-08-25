@@ -23,6 +23,11 @@ class JavaSparkJob extends SparkJob {
       .getOrElse(SparkJobValid)
   }
 
+
+ final override def addOrReplaceJar(sc:C, jarName: String, jarPath: String): Unit =
+  { sc.asInstanceOf[JavaSparkContext].addJar(jarPath)
+  }
+
   /**
    * The main class that carries out the Spark job.  The results will be converted to JSON
    * and emitted (but NOT persisted).

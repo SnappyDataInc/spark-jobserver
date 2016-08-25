@@ -1,3 +1,6 @@
+
+
+
 package spark.jobserver
 
 import java.util.concurrent.Executors._
@@ -212,7 +215,7 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
       val jarInfo = JarInfo(appName, lastUploadTime.get)
       val jobId = java.util.UUID.randomUUID().toString()
       logger.info("Loading class {} for app {}", classPath, appName: Any)
-      val jobJarInfo = try {
+      val (jobJarInfo , retrievedFromCache) = try {
         jobCache.getSparkJob(jarInfo.appName, jarInfo.uploadTime, classPath)
       } catch {
         case _: ClassNotFoundException =>
@@ -240,7 +243,7 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
       val jobInfo = JobInfo(jobId, contextName, jarInfo, classPath, DateTime.now(), None, None)
       future =
-        Option(getJobFuture(jobJarInfo, jobInfo, jobConfig, sender, jobContext, sparkEnv))
+        Option(getJobFuture(jobJarInfo, jobInfo, jobConfig, sender, jobContext, sparkEnv , !retrievedFromCache))
     }
 
     future
@@ -251,7 +254,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
                            jobConfig: Config,
                            subscriber: ActorRef,
                            jobContext: ContextLike,
-                           sparkEnv: SparkEnv): Future[Any] = {
+                           sparkEnv: SparkEnv,
+                           loadJarFile: Boolean): Future[Any] = {
 
     val jobId = jobInfo.jobId
     val constructor = jobJarInfo.constructor
@@ -288,6 +292,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           statusActor ! JobStatusActor.JobInit(jobInfo)
 
           val jobC = jobContext.asInstanceOf[job.C]
+
+          if (loadJarFile) job.addOrReplaceJar(jobC,jobInfo.jarInfo.appName, jobJarInfo.jarFilePath)
+
           job.validate(jobC, jobConfig) match {
             case SparkJobInvalid(reason) => {
               val err = new Throwable(reason)

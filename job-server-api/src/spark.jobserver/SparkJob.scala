@@ -1,6 +1,7 @@
 package spark.jobserver
 
 import com.typesafe.config.Config
+
 import org.apache.spark.SparkContext
 
 sealed trait SparkJobValidation {
@@ -25,7 +26,8 @@ trait SparkJobBase {
    * This is the entry point for a Spark Job Server to execute Spark jobs.
    * This function should create or reuse RDDs and return the result at the end, which the
    * Job Server will cache or display.
-   * @param sc a SparkContext or similar for the job.  May be reused across jobs.
+    *
+    * @param sc a SparkContext or similar for the job.  May be reused across jobs.
    * @param jobConfig the Typesafe Config object passed into the job request
    * @return the job result
    */
@@ -37,9 +39,14 @@ trait SparkJobBase {
    * to the user.
    * NOTE: this method should return very quickly.  If it responds slowly then the job server may time out
    * trying to start this job.
-   * @return either SparkJobValid or SparkJobInvalid
+    *
+    * @return either SparkJobValid or SparkJobInvalid
    */
   def validate(sc: C, config: Config): SparkJobValidation
+
+  def addOrReplaceJar(sc:C, jarName: String, jarPath: String): Unit = {
+   sc.asInstanceOf[SparkContext].addJar(jarPath)
+  }
 }
 
 trait SparkJob extends SparkJobBase {

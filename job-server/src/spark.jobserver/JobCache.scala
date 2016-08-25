@@ -1,15 +1,15 @@
 package spark.jobserver
 
 import java.net.URL
+
 import akka.actor.ActorRef
 import akka.util.Timeout
-import org.apache.spark.{SparkContext, SparkEnv}
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 import spark.jobserver.io.JobDAOActor
 import spark.jobserver.util.{ContextURLClassLoader, JarUtils, LRUCache}
 
-import scala.util.{Success, Failure}
+import org.apache.spark.SparkContext
 
 case class JobJarInfo(constructor: () => SparkJobBase,
                       className: String,
@@ -33,18 +33,20 @@ class JobCache(maxEntries: Int, dao: ActorRef, sparkContext: SparkContext, loade
    * @param uploadTime the upload time for the version of the jar wanted
    * @param classPath the fully qualified name of the class/object to load
    */
-  def getSparkJob(appName: String, uploadTime: DateTime, classPath: String): JobJarInfo = {
-    cache.get((appName, uploadTime, classPath), {
-      import akka.pattern.ask
+  def getSparkJob(appName: String, uploadTime: DateTime, classPath: String): (JobJarInfo , Boolean ) = {
+    var retrievedFromCache = true
+    ( cache.get((appName, uploadTime, classPath), {
       import scala.concurrent.Await
 
+      import akka.pattern.ask
+      retrievedFromCache=false
       val jarPathReq = (dao ? JobDAOActor.GetJarPath(appName, uploadTime)).mapTo[JobDAOActor.JarPath]
       val jarPath = Await.result(jarPathReq, daoAskTimeout.duration).jarPath
       val jarFilePath = new java.io.File(jarPath).getAbsolutePath()
-      sparkContext.addJar(jarFilePath) // Adds jar for remote executors
+     // sparkContext.addJar(jarFilePath) // Adds jar for remote executors
       loader.addURL(new URL("file:" + jarFilePath)) // Now jar added for local loader
       val constructor = JarUtils.loadClassOrObject[SparkJobBase](classPath, loader)
       JobJarInfo(constructor, classPath, jarFilePath)
-    })
+    }), retrievedFromCache )
   }
 }
