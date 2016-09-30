@@ -43,10 +43,6 @@ trait SparkJobBase {
     * @return either SparkJobValid or SparkJobInvalid
    */
   def validate(sc: C, config: Config): SparkJobValidation
-
-  def addOrReplaceJar(sc:C, jarName: String, jarPath: String): Unit = {
-   sc.asInstanceOf[SparkContext].addJar(jarPath)
-  }
 }
 
 trait SparkJob extends SparkJobBase {
