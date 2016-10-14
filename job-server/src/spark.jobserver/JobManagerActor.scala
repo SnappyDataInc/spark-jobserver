@@ -3,22 +3,23 @@
 
 package spark.jobserver
 
-import java.net.{URI, URL}
 import java.util.concurrent.Executors._
-import java.util.concurrent.atomic.AtomicInteger
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 
 import akka.actor.{ActorRef, PoisonPill, Props}
 import com.typesafe.config.Config
+import java.net.{URI, URL}
+import java.util.concurrent.atomic.AtomicInteger
+
 import ooyala.common.akka.InstrumentedActor
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.joda.time.DateTime
-import spark.jobserver.io.{JarInfo, JobDAOActor, JobInfo}
-import spark.jobserver.util.{ContextURLClassLoader, SparkJobUtils}
 
-import org.apache.spark.{SparkConf, SparkEnv}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
+import spark.jobserver.ContextSupervisor.StopContext
+import spark.jobserver.io.{JarInfo, JobDAO, JobDAOActor, JobInfo}
+import spark.jobserver.util.{ContextURLClassLoader, SparkJobUtils}
 
 object JobManagerActor {
   // Messages
@@ -71,12 +72,10 @@ object JobManagerActor {
  */
 class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
-  import collection.JavaConverters._
-  import scala.util.control.Breaks._
-
   import CommonMessages._
   import JobManagerActor._
-  import org.apache.spark.jobserver._
+  import scala.util.control.Breaks._
+  import collection.JavaConverters._
 
   val config = context.system.settings.config
   private val maxRunningJobs = SparkJobUtils.getMaxRunningJobs(config)
@@ -194,11 +193,10 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
                        sparkEnv: SparkEnv): Option[Future[Any]] = {
     var future: Option[Future[Any]] = None
     breakable {
-      import scala.concurrent.Await
-      import scala.concurrent.duration._
-
       import akka.pattern.ask
       import akka.util.Timeout
+      import scala.concurrent.duration._
+      import scala.concurrent.Await
 
       val daoAskTimeout = Timeout(3 seconds)
       // TODO: refactor so we don't need Await, instead flatmap into more futures
@@ -315,7 +313,7 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           }
         } finally {
           org.slf4j.MDC.remove("jobId")
-          Utils.removeJar(jobContext.sparkContext, jobJarInfo.jarFilePath)
+          org.apache.spark.jobserver.Utils.removeJar(jobContext.sparkContext, jobJarInfo.jarFilePath)
         }
       } catch {
         case e: java.lang.AbstractMethodError => {
