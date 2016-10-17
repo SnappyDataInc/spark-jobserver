@@ -293,11 +293,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
           val jobC = jobContext.asInstanceOf[job.C]
 
-          if (loadJarFile) {
-            jobContext.sparkContext.setLocalProperty(
-              "SNAPPY_JOB_SERVER_JAR_NAME", jobJarInfo.jarFilePath)
-          }
-
+          jobContext.sparkContext.setLocalProperty(
+            "SNAPPY_JOB_SERVER_JAR_NAME", jobJarInfo.jarFilePath)
+          
           job.validate(jobC, jobConfig) match {
             case SparkJobInvalid(reason) => {
               val err = new Throwable(reason)
