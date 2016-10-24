@@ -311,7 +311,6 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           }
         } finally {
           org.slf4j.MDC.remove("jobId")
-          org.apache.spark.jobserver.Utils.removeJar(jobContext.sparkContext, jobJarInfo.jarFilePath)
         }
       } catch {
         case e: java.lang.AbstractMethodError => {

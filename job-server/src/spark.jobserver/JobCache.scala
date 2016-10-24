@@ -43,7 +43,7 @@ class JobCache(maxEntries: Int, dao: ActorRef, sparkContext: SparkContext, loade
       val jarPathReq = (dao ? JobDAOActor.GetJarPath(appName, uploadTime)).mapTo[JobDAOActor.JarPath]
       val jarPath = Await.result(jarPathReq, daoAskTimeout.duration).jarPath
       val jarFilePath = new java.io.File(jarPath).getAbsolutePath()
-     // sparkContext.addJar(jarFilePath) // Adds jar for remote executors
+      sparkContext.addJar(jarFilePath) // Adds jar for remote executors
       loader.addURL(new URL("file:" + jarFilePath)) // Now jar added for local loader
       val constructor = JarUtils.loadClassOrObject[SparkJobBase](classPath, loader)
       JobJarInfo(constructor, classPath, jarFilePath)
