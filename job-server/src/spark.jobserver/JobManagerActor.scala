@@ -124,7 +124,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         }
         jobContext = createContextFromConfig()
         sparkEnv = SparkEnv.get
-        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext, jarLoader)
+        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,
+          jobContext.makeClassLoader(jarLoader))
         getSideJars(contextConfig).foreach { jarUri => jobContext.sparkContext.addJar(jarUri) }
         sender ! Initialized(contextName, resultActor)
       } catch {
