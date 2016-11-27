@@ -11,8 +11,4 @@ import org.apache.spark.streaming.StreamingContext
 trait SparkStreamingJob extends SparkJobBase {
   type C = StreamingContext
 
-
-  final override def addOrReplaceJar(sc: C, jarName: String, jarPath: String): Unit = {
-    sc.asInstanceOf[StreamingContext].sparkContext.addJar(jarPath)
-  }
 }

@@ -124,7 +124,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         }
         jobContext = createContextFromConfig()
         sparkEnv = SparkEnv.get
-        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext, jarLoader)
+        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,
+          jobContext.makeClassLoader(jarLoader))
         getSideJars(contextConfig).foreach { jarUri => jobContext.sparkContext.addJar(jarUri) }
         sender ! Initialized(contextName, resultActor)
       } catch {
@@ -293,8 +294,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
           val jobC = jobContext.asInstanceOf[job.C]
 
-          if (loadJarFile) job.addOrReplaceJar(jobC,jobInfo.jarInfo.appName, jobJarInfo.jarFilePath)
-
+          jobContext.sparkContext.setLocalProperty(
+            "SNAPPY_JOB_SERVER_JAR_NAME", jobJarInfo.jarFilePath)
+          
           job.validate(jobC, jobConfig) match {
             case SparkJobInvalid(reason) => {
               val err = new Throwable(reason)
