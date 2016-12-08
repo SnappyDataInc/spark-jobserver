@@ -94,6 +94,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
   private val jobCacheEnabled = Try(config.getBoolean("spark.job-cache.enabled")).getOrElse(false)
   // Use Spark Context's built in classloader when SPARK-1230 is merged.
   private val jarLoader = new ContextURLClassLoader(Array[URL](), getClass.getClassLoader)
+  //SnappyData changes to give a classLoader which also can see installed jars
+  private var wrappedLoader : ContextURLClassLoader = _
   private val contextName = contextConfig.getString("context.name")
   private val isAdHoc = Try(contextConfig.getBoolean("is-adhoc")).getOrElse(false)
 
@@ -124,8 +126,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         }
         jobContext = createContextFromConfig()
         sparkEnv = SparkEnv.get
-        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,
-          jobContext.makeClassLoader(jarLoader))
+        wrappedLoader = jobContext.makeClassLoader(jarLoader)
+        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,wrappedLoader)
+
         getSideJars(contextConfig).foreach { jarUri => jobContext.sparkContext.addJar(jarUri) }
         sender ! Initialized(contextName, resultActor)
       } catch {
@@ -280,7 +283,7 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
         // Use the Spark driver's class loader as it knows about all our jars already
         // NOTE: This may not even be necessary if we set the driver ActorSystem classloader correctly
-        Thread.currentThread.setContextClassLoader(jarLoader)
+        Thread.currentThread.setContextClassLoader(wrappedLoader)
         val job = constructor()
         if (job.isInstanceOf[NamedObjectSupport]) {
           val namedObjects = job.asInstanceOf[NamedObjectSupport].namedObjectsPrivate
