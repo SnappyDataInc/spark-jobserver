@@ -3,11 +3,10 @@ package spark.jobserver
 import akka.actor.{ActorSystem, ActorRef}
 import akka.actor.Props
 import akka.pattern.ask
+import com.typesafe.config.{ConfigValueFactory, Config, ConfigFactory}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
-import spark.jobserver.io.JobDAO
-import spark.jobserver.io.DataFileDAO
+import spark.jobserver.io.{JobDAOActor, JobDAO, DataFileDAO}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
@@ -35,18 +34,28 @@ object JobServer {
 
   // Allow custom function to create ActorSystem.  An example of why this is useful:
   // we can have something that stores the ActorSystem so it could be shut down easily later.
-  def start(args: Array[String], makeSystem: Config => ActorSystem) {
-    val defaultConfig = ConfigFactory.load()
-    val config = if (args.length > 0) {
-      val configFile = new File(args(0))
-      if (!configFile.exists()) {
-        println("Could not find configuration file " + configFile)
-        sys.exit(1)
-      }
-      ConfigFactory.parseFile(configFile).withFallback(defaultConfig).resolve()
-    } else {
-      defaultConfig
-    }
+
+ /* SnappyData notes why we need makeConfig.
+
+   Settings for jobserver overriding the application.conf or bootProperties.
+   ideally there should have been reference.conf in the jobserver packaging instead of application.conf.
+
+   in generic case, user supplied application.conf will be picked up if found first in the classpath.
+   in snappy embeded mode properties file will be parsed much earlier & converted into bootProperties.
+   user won't need application.conf in snappydata's case.
+
+   to provide snappy defaults "reference.conf" should be used if we too move to typesafe.Config
+   otherwise a separate file can be created "jobserver-reference.conf" which will be injected
+   just before defaultConfig.
+
+   ref:
+   http://kamon.io/introduction/configuration/
+   https://github.com/typesafehub/config
+ */
+
+  def start(args: Array[String], makeConfig: (Array[String]) => Config, makeSystem: Config => ActorSystem) {
+    val config = makeConfig(args)
+
     logger.info("Starting JobServer with config {}", config.getConfig("spark").root.render())
     logger.info("Spray config: {}", config.getConfig("spray.can.server").root.render())
     val port = config.getInt("spark.jobserver.port")
@@ -57,11 +66,15 @@ object JobServer {
     val ctor = clazz.getDeclaredConstructor(Class.forName("com.typesafe.config.Config"))
     try {
       val jobDAO = ctor.newInstance(config).asInstanceOf[JobDAO]
-      val jarManager = system.actorOf(Props(classOf[JarManager], jobDAO), "jar-manager")
+      val daoActor = system.actorOf(Props(classOf[JobDAOActor], jobDAO), "dao-manager")
       val dataManager = system.actorOf(Props(classOf[DataManagerActor],
           new DataFileDAO(config)), "data-manager")
-      val supervisor = system.actorOf(Props(classOf[LocalContextSupervisorActor], jobDAO),
-        "context-supervisor")
+      val jarManager = system.actorOf(Props(classOf[JarManager], daoActor), "jar-manager")
+      val contextPerJvm = config.getBoolean("spark.jobserver.context-per-jvm")
+      val supervisor =
+        system.actorOf(Props(if (contextPerJvm) { classOf[AkkaClusterSupervisorActor] }
+                             else               { classOf[LocalContextSupervisorActor] }, daoActor),
+                       "context-supervisor")
       val jobInfo = system.actorOf(Props(classOf[JobInfoActor], jobDAO, supervisor), "job-info")
 
       // Add initial job JARs, if specified in configuration.
@@ -117,7 +130,36 @@ object JobServer {
     }
   }
 
-  def main(args: Array[String]) {
-    start(args, config => ActorSystem("JobServer", config))
+  /**
+   * This will allow a custom Config object to be built by the user from disparate sources.
+   *
+   * @param args - arguments passed to start or commandline.
+   * @return a Config object that will only be used "as is". User's responsibility to call
+   *         ConfigFactory.load and use it as .withFallback.
+   */
+  private def getConfig(args: Array[String]) : Config = {
+    val defaultConfig = ConfigFactory.load()
+    if (args.length > 0) {
+      val configFile = new File(args(0))
+      if (!configFile.exists()) {
+        println("Could not find configuration file " + configFile)
+        sys.exit(1)
+      }
+      ConfigFactory.parseFile(configFile).withFallback(defaultConfig).resolve()
+    } else {
+      defaultConfig
+    }
   }
+
+  def main(args: Array[String]) {
+    import scala.collection.JavaConverters._
+    def makeSupervisorSystem(name: String)(config: Config): ActorSystem = {
+      val configWithRole = config.withValue("akka.cluster.roles",
+        ConfigValueFactory.fromIterable(List("supervisor").asJava))
+      ActorSystem(name, configWithRole)
+    }
+    start(args, getConfig, makeSupervisorSystem("JobServer")(_))
+  }
+
+
 }

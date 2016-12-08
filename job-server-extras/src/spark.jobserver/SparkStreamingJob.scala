@@ -1,5 +1,6 @@
 package spark.jobserver
 
+import org.apache.spark.SparkContext
 import org.apache.spark.streaming.StreamingContext
 
 /**
@@ -9,4 +10,5 @@ import org.apache.spark.streaming.StreamingContext
  */
 trait SparkStreamingJob extends SparkJobBase {
   type C = StreamingContext
+
 }

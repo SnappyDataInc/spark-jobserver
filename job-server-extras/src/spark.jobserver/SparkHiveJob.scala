@@ -1,5 +1,6 @@
 package spark.jobserver
 
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.hive.HiveContext
 
 trait SparkHiveJob extends SparkJobBase {

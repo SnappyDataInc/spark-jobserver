@@ -19,12 +19,12 @@ object HiveLoaderJob extends SparkHiveJob {
 
   val tableCreate = "CREATE TABLE `default`.`test_addresses`"
   val tableArgs = "(`firstName` String, `lastName` String, `address` String, `city` String)"
-  val tableRowFormat = "ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'"
-  val tableColFormat = "COLLECTION ITEMS TERMINATED BY '\002'"
-  val tableMapFormat = "MAP KEYS TERMINATED BY '\003' STORED"
+  val tableRowFormat = "ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'"
+  val tableColFormat = "COLLECTION ITEMS TERMINATED BY '\u0002'"
+  val tableMapFormat = "MAP KEYS TERMINATED BY '\u0003' STORED"
   val tableAs = "AS TextFile"
 
-  //Will fail with a 'SemanticException : Invalid path' if this file is not there
+  // Will fail with a 'SemanticException : Invalid path' if this file is not there
   val loadPath = "'test/spark.jobserver/hive_test_job_addresses.txt'"
 
   def validate(hive: HiveContext, config: Config): SparkJobValidation = SparkJobValid

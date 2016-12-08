@@ -1,5 +1,7 @@
 package spark.jobserver
 
+import spark.jobserver.util.ContextURLClassLoader
+
 import org.apache.spark.SparkContext
 
 /**
@@ -29,4 +31,9 @@ trait ContextLike {
    * stop method.
    */
   def stop()
+
+
+  def makeClassLoader(parent : ContextURLClassLoader): ContextURLClassLoader ={
+    new ContextURLClassLoader(parent.getURLs, parent)
+  }
 }
