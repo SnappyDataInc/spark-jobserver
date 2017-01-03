@@ -320,10 +320,12 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         case e: java.lang.AbstractMethodError => {
           logger.error("Oops, there's an AbstractMethodError... maybe you compiled " +
             "your code with an older version of SJS? here's the exception:", e)
+          statusActor ! JobErroredOut(jobId, DateTime.now(), e)
           throw e
         }
         case e: Throwable => {
           logger.error("Got Throwable", e)
+          statusActor ! JobErroredOut(jobId, DateTime.now(), e)
           throw e
         };
       }
