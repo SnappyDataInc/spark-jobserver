@@ -325,6 +325,11 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           throw e
         }
         case NonFatal(e) => {
+          /**
+           *  Handling for Non-Fatal error was done separatly due to this scala issue(
+           *  https://issues.scala-lang.org/browse/SI-8938) which causes the Future to not
+           *  properly returning the status so wrapping the Fatal error in the following case
+           */
           logger.error("Got NonFatal Exception: ", e)
           throw e
         };
