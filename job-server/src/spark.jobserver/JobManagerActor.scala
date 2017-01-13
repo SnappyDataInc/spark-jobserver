@@ -5,6 +5,8 @@ package spark.jobserver
 
 import java.util.concurrent.Executors._
 
+import scala.util.control.NonFatal
+
 import akka.actor.{ActorRef, PoisonPill, Props}
 import com.typesafe.config.Config
 import java.net.{URI, URL}
@@ -322,10 +324,19 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
             "your code with an older version of SJS? here's the exception:", e)
           throw e
         }
-        case e: Throwable => {
-          logger.error("Got Throwable", e)
+        case NonFatal(e) => {
+          /**
+           *  Handling for Non-Fatal error was done separatly due to this scala issue(
+           *  https://issues.scala-lang.org/browse/SI-8938) which causes the Future to not
+           *  properly returning the status so wrapping the Fatal error in the following case
+           */
+          logger.error("Got NonFatal Exception: ", e)
           throw e
         };
+        case e : Throwable => {
+          logger.error("Got Fatal Exception: ", e)
+          throw wrapInRuntimeException(e)
+        }
       }
     }(executionContext).andThen {
       case Success(result: Any) =>
@@ -340,6 +351,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         // Either way an enhancement would be required here to make Stream[_] responses work
         // with context-per-jvm=true configuration
         resultActor ! JobResult(jobId, result)
+      case Failure(error: RuntimeException) =>
+        statusActor ! JobErroredOut(jobId, DateTime.now(), error)
+        logger.error("Exception from job " + jobId + ": ", error)
       case Failure(error: Throwable) =>
         // Wrapping the error inside a RuntimeException to handle the case of throwing custom exceptions.
         val wrappedError = wrapInRuntimeException(error)
