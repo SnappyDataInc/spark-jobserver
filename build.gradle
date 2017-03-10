@@ -17,7 +17,7 @@
 
 apply plugin: 'scala'
 
-version = '0.6.3-3'
+version = '0.6.2.3'
 
 ext {
   nettyGroup = 'io.netty'
