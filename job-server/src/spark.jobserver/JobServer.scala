@@ -56,8 +56,8 @@ object JobServer {
   def start(args: Array[String], makeConfig: (Array[String]) => Config, makeSystem: Config => ActorSystem) {
     val config = makeConfig(args)
 
-    logger.info("Starting JobServer with config {}", config.getConfig("spark").root.render())
-    logger.info("Spray config: {}", config.getConfig("spray.can.server").root.render())
+    logger.debug("Starting JobServer with config {}", config.getConfig("spark").root.render())
+    logger.debug("Spray config: {}", config.getConfig("spray.can.server").root.render())
     val port = config.getInt("spark.jobserver.port")
 
     // TODO: Hardcode for now to get going. Make it configurable later.
