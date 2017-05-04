@@ -311,8 +311,11 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
             case SparkJobValid => {
               statusActor ! JobStarted(jobId: String, contextName, jobInfo.startTime)
               val sc = jobContext.sparkContext
+              // When tasks are killed, the task threads cannot be interrupted
+              // as it can create issues if the thread is writing on disk etc.
+              // So setting interrupt as false.
               sc.setJobGroup(jobId, s"Job group for $jobId " +
-                  s"and spark context ${sc.applicationId}", false)
+                  s"and spark context ${sc.applicationId}", interruptOnCancel = false)
               job.runJob(jobC, jobConfig)
             }
           }
