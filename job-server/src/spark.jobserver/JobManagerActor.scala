@@ -311,7 +311,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
             case SparkJobValid => {
               statusActor ! JobStarted(jobId: String, contextName, jobInfo.startTime)
               val sc = jobContext.sparkContext
-              sc.setJobGroup(jobId, s"Job group for $jobId and spark context ${sc.applicationId}", true)
+              sc.setJobGroup(jobId, s"Job group for $jobId " +
+                  s"and spark context ${sc.applicationId}", false)
               job.runJob(jobC, jobConfig)
             }
           }
