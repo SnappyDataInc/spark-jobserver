@@ -36,4 +36,8 @@ trait ContextLike {
   def makeClassLoader(parent : ContextURLClassLoader): ContextURLClassLoader ={
     new ContextURLClassLoader(parent.getURLs, parent)
   }
+
+  def addJobJar(jarName : String) = {
+    // do nothing for not required cases like HiveContextFactory
+  }
 }

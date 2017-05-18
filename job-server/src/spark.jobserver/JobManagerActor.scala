@@ -126,12 +126,17 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
         getSideJars(contextConfig).foreach { jarUri =>
           jarLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
         }
+
         jobContext = createContextFromConfig()
         sparkEnv = SparkEnv.get
         wrappedLoader = jobContext.makeClassLoader(jarLoader)
         jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,wrappedLoader)
 
-        getSideJars(contextConfig).foreach { jarUri => jobContext.sparkContext.addJar(jarUri) }
+        getSideJars(contextConfig).foreach { jarUri => {
+          jobContext.sparkContext.addJar(jarUri)
+          jobContext.addJobJar(jarUri)
+         }
+        }
         sender ! Initialized(contextName, resultActor)
       } catch {
         case t: Throwable =>
@@ -300,8 +305,11 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           val jobC = jobContext.asInstanceOf[job.C]
 
           jobContext.sparkContext.setLocalProperty(
-            "SNAPPY_CHANGEABLE_JAR_NAME", jobJarInfo.jarFilePath)
-          
+                        "SNAPPY_CHANGEABLE_JAR_NAME", jobJarInfo.jarFilePath)
+
+          // Adding this in context -like jar list for StreamingContext to act when it stops
+          jobContext.addJobJar(jobJarInfo.jarFilePath)
+
           job.validate(jobC, jobConfig) match {
             case SparkJobInvalid(reason) => {
               val err = new Throwable(reason)
