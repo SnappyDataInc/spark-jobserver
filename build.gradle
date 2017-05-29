@@ -59,7 +59,6 @@ dependencies {
   // always use stock spark so that snappy extensions don't get accidently
   // included here in jobserver code.
   provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
@@ -67,7 +66,6 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
@@ -75,7 +73,6 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
@@ -83,7 +80,6 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
@@ -91,7 +87,6 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
@@ -99,7 +94,6 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: 'org.apache.spark', module: "spark-unsafe_${scalaBinaryVersion}")
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: scalaTest)
