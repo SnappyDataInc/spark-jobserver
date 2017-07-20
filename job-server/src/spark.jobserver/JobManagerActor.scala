@@ -304,9 +304,6 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
           val jobC = jobContext.asInstanceOf[job.C]
 
-          jobContext.sparkContext.setLocalProperty(
-                        "SNAPPY_CHANGEABLE_JAR_NAME", jobJarInfo.jarFilePath)
-
           // Adding this in context -like jar list for StreamingContext to act when it stops
           jobContext.addJobJar(jobJarInfo.jarFilePath)
 
