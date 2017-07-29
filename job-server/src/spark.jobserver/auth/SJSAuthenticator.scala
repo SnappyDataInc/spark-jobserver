@@ -1,16 +1,17 @@
 package spark.jobserver.auth
 
+import java.sql.DriverManager
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 import spray.routing.directives.AuthMagnet
 import spray.routing.authentication.UserPass
 import spray.routing.authentication.BasicAuth
-
 import spray.routing.authentication._
 import spray.routing.directives.AuthMagnet
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.concurrent.{Await, ExecutionContext, Future}
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.apache.shiro.SecurityUtils
@@ -89,6 +90,7 @@ trait SJSAuthenticator {
    */
   def asAllUserAuthenticator(implicit ec: ExecutionContext): AuthMagnet[AuthInfo] = {
     def validateUser(userPass: Option[UserPass]): Option[AuthInfo] = {
+
       Some(new AuthInfo(new User("anonymous")))
     }
 
@@ -98,6 +100,21 @@ trait SJSAuthenticator {
 
     BasicAuth(authenticator _, realm = "Private API")
   }
+
+  def snappyUserAuthenticator(implicit ec: ExecutionContext): AuthMagnet[AuthInfo] = {
+    BasicAuth(SnappyAuthenticator.auth.authenticate _, realm = "Private API")
+  }
 }
 
+trait SnappyAuthenticator {
+  def authenticate(userPass: Option[UserPass]): Future[Option[AuthInfo]]
+}
 
+object SnappyAuthenticator {
+  import scala.concurrent.ExecutionContext.Implicits.global
+  var auth: SnappyAuthenticator = new SnappyAuthenticator {
+    override def authenticate(userPass: Option[UserPass]): Future[Option[AuthInfo]] = {
+      Future { Some(new AuthInfo(User("anonymous"))) }
+    }
+  }
+}
