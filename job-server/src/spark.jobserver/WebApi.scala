@@ -7,7 +7,7 @@ import javax.net.ssl.SSLContext
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
-import com.typesafe.config.{Config, ConfigException, ConfigFactory, ConfigRenderOptions}
+import com.typesafe.config._
 import ooyala.common.akka.web.JsonUtils.AnyJsonFormat
 import ooyala.common.akka.web.{CommonRoutes, WebService}
 import org.apache.shiro.SecurityUtils
@@ -145,8 +145,9 @@ class WebApi(system: ActorSystem,
               TimeUnit.MILLISECONDS).toInt / 1000).getOrElse(10)
       asShiroAuthenticator(authTimeout)
     } else {
-      logger.info("No authentication.")
-      asAllUserAuthenticator
+      // logger.info("No authentication.")
+      // asAllUserAuthenticator
+      snappyUserAuthenticator
     }
   }
 
@@ -481,8 +482,12 @@ class WebApi(system: ActorSystem,
                     val jobManager = getJobManagerForContext(contextOpt, contextConfig, classPath)
                     val events = if (async) asyncEvents else syncEvents
                     val timeout = timeoutOpt.map(t => Timeout(t.seconds)).getOrElse(DefaultSyncTimeout)
+                    var sJobConfig = jobConfig.withValue("snappydata.user", ConfigValueFactory
+                        .fromAnyRef(authInfo.user.login))
+                    sJobConfig = sJobConfig.withValue("snappydata.password", ConfigValueFactory
+                        .fromAnyRef(authInfo.user.token))
                     val future = jobManager.get.ask(
-                      JobManagerActor.StartJob(appName, classPath, jobConfig, events))(timeout)
+                      JobManagerActor.StartJob(appName, classPath, sJobConfig, events))(timeout)
                     respondWithMediaType(MediaTypes.`application/json`) { ctx =>
                       future.map {
                         case JobResult(_, res) =>
