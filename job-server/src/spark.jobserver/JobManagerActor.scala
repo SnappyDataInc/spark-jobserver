@@ -127,13 +127,16 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
           jarLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
         }
 
+        logger.info("jarLoader is " + jarLoader)
         jobContext = createContextFromConfig()
         sparkEnv = SparkEnv.get
         wrappedLoader = jobContext.makeClassLoader(jarLoader)
-        jobCache = new JobCache(jobCacheSize, daoActor, jobContext.sparkContext,wrappedLoader)
+        jobCache = new JobCache(jobCacheSize, daoActor,
+          jobContext.sparkContext, wrappedLoader)
 
+        logger.info("Wrapped loader is " + wrappedLoader)
         getSideJars(contextConfig).foreach { jarUri => {
-          jobContext.sparkContext.addJar(jarUri)
+          // jobContext.sparkContext.addJar(jarUri)
           jobContext.addJobJar(jarUri)
          }
         }
@@ -146,13 +149,13 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
       }
 
     case StartJob(appName, classPath, jobConfig, events) => {
-      val loadedJars = jarLoader.getURLs
+      val loadedJars = wrappedLoader.getURLs
       getSideJars(jobConfig).foreach { jarUri =>
         val jarToLoad = new URL(convertJarUriSparkToJava(jarUri))
         if(! loadedJars.contains(jarToLoad)){
           logger.info("Adding {} to Current Job Class path", jarUri)
-          jarLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
-          jobContext.sparkContext.addJar(jarUri)
+          wrappedLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
+          // jobContext.sparkContext.addJar(jarUri)
         }
       }
       startJobInternal(appName, classPath, jobConfig, events, jobContext, sparkEnv)
@@ -304,11 +307,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
           val jobC = jobContext.asInstanceOf[job.C]
 
-          jobContext.sparkContext.setLocalProperty(
-                        "SNAPPY_CHANGEABLE_JAR_NAME", jobJarInfo.jarFilePath)
-
           // Adding this in context -like jar list for StreamingContext to act when it stops
           jobContext.addJobJar(jobJarInfo.jarFilePath)
+
 
           job.validate(jobC, jobConfig) match {
             case SparkJobInvalid(reason) => {
