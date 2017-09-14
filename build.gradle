@@ -59,42 +59,42 @@ dependencies {
 
   // always use stock spark so that snappy extensions don't get accidently
   // included here in jobserver code.
-  provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: scalaTest)
@@ -138,6 +138,12 @@ dependencies {
     compile 'com.typesafe:config:1.2.1'
   }
 
+  testCompile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}"
   testCompile "${scalaTest}:scalatest_${scalaBinaryVersion}:${scalatestVersion}"
   testCompile("com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:${akkaVersion}") {
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
