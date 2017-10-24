@@ -50,7 +50,6 @@ def isJDK8 = scala.util.Properties.isJavaAtLeast('1.8')
 dependencies {
   compile 'org.scala-lang:scala-library:' + scalaVersion
   compile 'org.scala-lang:scala-reflect:' + scalaVersion
-  compile 'org.scala-lang:scala-compiler:' + scalaVersion
 
   compile 'org.slf4j:slf4j-api:' + slf4jVersion
   compile 'org.slf4j:slf4j-log4j12:' + slf4jVersion
@@ -59,48 +58,46 @@ dependencies {
 
   // always use stock spark so that snappy extensions don't get accidently
   // included here in jobserver code.
-  provided("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  provided("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
+  compileOnly("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
     exclude(group: nettyGroup)
     exclude(group: scalaMacros)
     exclude(group: scalaTest)
     exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
-    exclude(group: 'org.scala-lang', module: 'scala-compiler')
+  }
+  compileOnly(group: 'io.dropwizard.metrics', name: 'metrics-core', version: metricsVersion) {
+    exclude(group: 'org.slf4j', module: 'slf4j-api')
+    exclude(group: 'org.slf4j', module: 'slf4j-log4j12')
   }
 
   // akka-appDeps
@@ -113,17 +110,17 @@ dependencies {
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.2"
-  compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.3"
-  compile "io.spray:spray-caching_${scalaBinaryVersion}:1.3.3"
+  compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.3"
+  compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.4"
+  compile "io.spray:spray-caching_${scalaBinaryVersion}:1.3.4"
   compile "io.spray:spray-routing-shapeless2_${scalaBinaryVersion}:1.3.3"
-  compile "io.spray:spray-client_${scalaBinaryVersion}:1.3.3"
+  compile "io.spray:spray-client_${scalaBinaryVersion}:1.3.4"
   compile 'com.yammer.metrics:metrics-core:2.2.0'
 
-  compile('org.joda:joda-convert:1.8.1') {
+  compile('org.joda:joda-convert:1.9.2') {
     exclude(group: 'com.google.guava', module: 'guava')
   }
-  compile 'joda-time:joda-time:2.9.4'
+  compile 'joda-time:joda-time:2.9.9'
 
   compile "com.typesafe.slick:slick_${scalaBinaryVersion}:2.1.0"
   compile 'com.h2database:h2:1.3.176'
@@ -133,17 +130,23 @@ dependencies {
   compile 'org.apache.shiro:shiro-core:1.2.6'
 
   if (isJDK8) {
-    compile 'com.typesafe:config:1.3.0'
+    compile 'com.typesafe:config:1.3.1'
   } else {
     compile 'com.typesafe:config:1.2.1'
   }
 
+  testCompile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+  testCompile "org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}"
   testCompile "${scalaTest}:scalatest_${scalaBinaryVersion}:${scalatestVersion}"
   testCompile("com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:${akkaVersion}") {
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:1.3.3"
+  testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:1.3.4"
 
   testRuntime "org.pegdown:pegdown:${pegdownVersion}"
 }
