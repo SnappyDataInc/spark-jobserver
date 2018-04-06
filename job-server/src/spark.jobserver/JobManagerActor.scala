@@ -6,7 +6,6 @@ package spark.jobserver
 import java.util.concurrent.Executors._
 
 import scala.util.control.NonFatal
-
 import akka.actor.{ActorRef, PoisonPill, Props}
 import com.typesafe.config.Config
 import java.net.{URI, URL}
@@ -14,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import ooyala.common.akka.InstrumentedActor
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.deploy.{PackageAndDepUtils, SparkSubmit}
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.joda.time.DateTime
 
@@ -150,13 +150,15 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
     case StartJob(appName, classPath, jobConfig, events) => {
       val loadedJars = wrappedLoader.getURLs
-      getSideJars(jobConfig).foreach { jarUri =>
-        val jarToLoad = new URL(convertJarUriSparkToJava(jarUri))
-        if(! loadedJars.contains(jarToLoad)){
-          logger.info("Adding {} to Current Job Class path", jarUri)
-          wrappedLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
-          // jobContext.sparkContext.addJar(jarUri)
-        }
+      logger.info(s"KN: dependent-jar-uris ${jobConfig.getString("dependent-jar-uris")}")
+      val allDepJars = Try(jobConfig.getString("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])
+      allDepJars.foreach { jarpath =>
+        logger.info(s"KN: jarpath = $jarpath")
+        // val jarToLoad = new URL(convertJarUriSparkToJava(jarpath))
+        // if(! loadedJars.contains(jarToLoad)){
+        // logger.info("Adding {} to Current Job Class path", jarToLoad)
+        // wrappedLoader.addURL(jarToLoad)
+        // jobContext.sparkContext.addJar(jarUri)
       }
       startJobInternal(appName, classPath, jobConfig, events, jobContext, sparkEnv)
     }
