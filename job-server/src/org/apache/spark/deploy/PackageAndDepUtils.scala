@@ -1,24 +1,39 @@
 package org.apache.spark.deploy
 
-object GetJarsAndDependencies extends App {
-  if (args.length < 1) {
-    println(s"GetJarsAndDependencies utility needs at least the coordinates")
-  }
+object GetJarsAndDependencies {
 
-  val usage: String = "Wrong usage"
+  val usage = s"Usage: GetJarsAndDependencies" +
+      s" [--repos repositories] [--jarcache path] coordinates"
 
-  val (coordinates, remoteRepos, ivyPath) = args.length match {
-    case 1 => (args(0), None, None)
-    case 2 => (args(0), Some(args(1)), None)
-    case 3 => (args(0), Some(args(1)), Some(args(2)))
-    case _ => ("INVALID", None, None)
-  }
-  if (coordinates.contentEquals("INVALID")) {
-    println(usage)
-    System.exit(1)
-  }
+  def main(args: Array[String]) {
+    if (args.length == 0) println(usage)
+    val arglist = args.toList
+    type OptionMap = Map[Symbol, String]
 
-  println(PackageAndDepUtils.resolveMavenCoordinates(coordinates, remoteRepos, ivyPath))
+    def nextOption(map: OptionMap, list: List[String]): OptionMap = {
+      def isSwitch(s: String) = (s(0) == '-')
+
+      list match {
+        case Nil => map
+        case "--jarcache" :: value :: tail =>
+          nextOption(map ++ Map('jarcache -> value), tail)
+        case "--repos" :: value :: tail =>
+          nextOption(map ++ Map('repos -> value), tail)
+        case string :: opt2 :: tail if isSwitch(opt2) =>
+          nextOption(map ++ Map('coordinates -> string), list.tail)
+        case string :: Nil => nextOption(map ++ Map('coordinates -> string), list.tail)
+        case option :: tail => println("Unknown option " + option)
+          Map.empty
+      }
+    }
+
+    val options = nextOption(Map(), arglist)
+
+    val coordinates = options.getOrElse('coordinates, throw new IllegalArgumentException)
+    val remoteRepos = options.get('repos)
+    val ivyPath = options.get('jarcache)
+    println(PackageAndDepUtils.resolveMavenCoordinates(coordinates, remoteRepos, ivyPath))
+  }
 }
 
 object PackageAndDepUtils {

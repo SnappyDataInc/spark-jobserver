@@ -150,15 +150,19 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
     case StartJob(appName, classPath, jobConfig, events) => {
       val loadedJars = wrappedLoader.getURLs
-      logger.info(s"KN: dependent-jar-uris ${jobConfig.getString("dependent-jar-uris")}")
-      val allDepJars = Try(jobConfig.getString("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])
+      logger.info(s"dependent-jar-uris" +
+          s" ${Try(jobConfig.getString
+          ("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])}")
+      val allDepJars = Try(jobConfig.getString
+      ("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])
       allDepJars.foreach { jarpath =>
-        logger.info(s"KN: jarpath = $jarpath")
-        // val jarToLoad = new URL(convertJarUriSparkToJava(jarpath))
-        // if(! loadedJars.contains(jarToLoad)){
-        // logger.info("Adding {} to Current Job Class path", jarToLoad)
-        // wrappedLoader.addURL(jarToLoad)
-        // jobContext.sparkContext.addJar(jarUri)
+        // logger.info(s"jarpath = $jarpath")
+        val jarToLoad = new URL("file:" + jarpath)
+        if (!loadedJars.contains(jarToLoad)) {
+          logger.info("Adding {} to Current Job Class path", jarToLoad)
+          wrappedLoader.addURL(jarToLoad)
+          jobContext.sparkContext.addJar(jarpath)
+        }
       }
       startJobInternal(appName, classPath, jobConfig, events, jobContext, sparkEnv)
     }
