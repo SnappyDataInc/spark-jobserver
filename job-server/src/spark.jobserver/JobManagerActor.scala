@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import ooyala.common.akka.InstrumentedActor
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.deploy.{PackageAndDepUtils, SparkSubmit}
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.joda.time.DateTime
 
