@@ -6,7 +6,6 @@ package spark.jobserver
 import java.util.concurrent.Executors._
 
 import scala.util.control.NonFatal
-
 import akka.actor.{ActorRef, PoisonPill, Props}
 import com.typesafe.config.Config
 import java.net.{URI, URL}
@@ -150,12 +149,18 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
     case StartJob(appName, classPath, jobConfig, events) => {
       val loadedJars = wrappedLoader.getURLs
-      getSideJars(jobConfig).foreach { jarUri =>
-        val jarToLoad = new URL(convertJarUriSparkToJava(jarUri))
-        if(! loadedJars.contains(jarToLoad)){
-          logger.info("Adding {} to Current Job Class path", jarUri)
-          wrappedLoader.addURL(new URL(convertJarUriSparkToJava(jarUri)))
-          // jobContext.sparkContext.addJar(jarUri)
+      logger.info(s"dependent-jar-uris" +
+          s" ${Try(jobConfig.getString
+          ("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])}")
+      val allDepJars = Try(jobConfig.getString
+      ("dependent-jar-uris").split('|').toSeq).getOrElse(Seq.empty[String])
+      allDepJars.foreach { jarpath =>
+        // logger.info(s"jarpath = $jarpath")
+        val jarToLoad = new URL("file:" + jarpath)
+        if (!loadedJars.contains(jarToLoad)) {
+          logger.info("Adding {} to Current Job Class path", jarToLoad)
+          wrappedLoader.addURL(jarToLoad)
+          jobContext.sparkContext.addJar(jarpath)
         }
       }
       startJobInternal(appName, classPath, jobConfig, events, jobContext, sparkEnv)
