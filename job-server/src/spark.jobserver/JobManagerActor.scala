@@ -168,6 +168,9 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
 
     case KillJob(jobId: String) => {
       jobContext.sparkContext.cancelJobGroup(jobId)
+      // This is assuming we always will use new SnappySQLJob,
+      // both for adhoc and streaming jobs.
+      jobContext.stop
       statusActor ! JobKilled(jobId, DateTime.now())
     }
 
