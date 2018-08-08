@@ -17,7 +17,7 @@
 
 apply plugin: 'scala'
 
-version = '0.6.2.7'
+version = sparkJobServerVersion
 
 ext {
   nettyGroup = 'io.netty'
