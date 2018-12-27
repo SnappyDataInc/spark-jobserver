@@ -23,7 +23,6 @@ ext {
   nettyGroup = 'io.netty'
   scalaMacros = 'org.scalamacros'
   scalaTest = 'org.scalatest'
-  akkaVersion = '2.3.16'
 }
 
 scalaStyle {
@@ -44,8 +43,6 @@ tasks.withType(ScalaCompile) {
 tasks.withType(ScalaDoc) {
   scalaDocOptions.additionalParameters = [ '-deprecation', '-feature', '-language:postfixOps', '-language:implicitConversions' ]
 }
-
-def isJDK8 = scala.util.Properties.isJavaAtLeast('1.8')
 
 dependencies {
   compile 'org.scala-lang:scala-library:' + scalaVersion
@@ -102,38 +99,41 @@ dependencies {
 
   // akka-appDeps
   compile("com.typesafe.akka:akka-slf4j_${scalaBinaryVersion}:${akkaVersion}") {
+    exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
   compile("com.typesafe.akka:akka-cluster_${scalaBinaryVersion}:${akkaVersion}") {
     exclude(group: 'com.typesafe.akka', module: 'akka-remote')
+    exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  compile "io.spray:spray-json_${scalaBinaryVersion}:1.3.3"
-  compile "io.spray:spray-can_${scalaBinaryVersion}:1.3.4"
-  compile "io.spray:spray-caching_${scalaBinaryVersion}:1.3.4"
-  compile "io.spray:spray-routing-shapeless2_${scalaBinaryVersion}:1.3.3"
-  compile "io.spray:spray-client_${scalaBinaryVersion}:1.3.4"
-  compile 'com.yammer.metrics:metrics-core:2.2.0'
+  compile("io.spray:spray-json_${scalaBinaryVersion}:${sprayJsonVersion}") {
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+    exclude(group: 'org.scala-lang', module: 'scala-compiler')
+  }
+  compile "io.spray:spray-can_${scalaBinaryVersion}:${sprayVersion}"
+  compile "io.spray:spray-caching_${scalaBinaryVersion}:${sprayVersion}"
+  compile("io.spray:spray-routing-shapeless2_${scalaBinaryVersion}:${sprayShapelessVersion}") {
+    exclude(group: 'org.scala-lang', module: 'scala-library')
+  }
+  compile "io.spray:spray-client_${scalaBinaryVersion}:${sprayVersion}"
+  compile "com.yammer.metrics:metrics-core:${metrics2Version}"
 
-  compile('org.joda:joda-convert:2.1.2') {
+  compile("org.joda:joda-convert:${jodaVersion}") {
     exclude(group: 'com.google.guava', module: 'guava')
   }
-  compile 'joda-time:joda-time:2.10.1'
+  compile "joda-time:joda-time:${jodaTimeVersion}"
 
-  compile "com.typesafe.slick:slick_${scalaBinaryVersion}:2.1.0"
-  compile 'com.h2database:h2:1.3.176'
-  compile 'commons-pool:commons-pool:1.6'
-  compile 'commons-dbcp:commons-dbcp:1.4'
-  compile 'org.flywaydb:flyway-core:3.2.1'
-  compile 'org.apache.shiro:shiro-core:1.2.6'
-
-  if (isJDK8) {
-    compile 'com.typesafe:config:1.3.1'
-  } else {
-    compile 'com.typesafe:config:1.2.1'
-  }
+  compile "com.typesafe.slick:slick_${scalaBinaryVersion}:${slickVersion}"
+  compile "com.h2database:h2:${h2Version}"
+  compile "commons-pool:commons-pool:${commonsPoolVersion}"
+  compile "commons-dbcp:commons-dbcp:${dbcpVersion}"
+  compile "org.flywaydb:flyway-core:${flywayVersion}"
+  compile "org.apache.shiro:shiro-core:${shiroVersion}"
+  compile "com.typesafe:config:${typesafeConfigVersion}"
 
   testCompile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
   testCompile "org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}"
@@ -143,10 +143,11 @@ dependencies {
   testCompile "org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}"
   testCompile "${scalaTest}:scalatest_${scalaBinaryVersion}:${scalatestVersion}"
   testCompile("com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:${akkaVersion}") {
+    exclude(group: 'org.scala-lang', module: 'scala-library')
     exclude(group: 'org.scala-lang', module: 'scala-reflect')
     exclude(group: 'org.scala-lang', module: 'scala-compiler')
   }
-  testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:1.3.4"
+  testCompile "io.spray:spray-testkit_${scalaBinaryVersion}:${sprayTestkitVersion}"
 
   testRuntime "org.pegdown:pegdown:${pegdownVersion}"
 }
