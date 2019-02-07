@@ -337,6 +337,7 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
             }
           }
         } finally {
+          jobContext.stop()
           org.slf4j.MDC.remove("jobId")
         }
       } catch {
