@@ -1,6 +1,5 @@
 package ooyala.common.akka
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{Matchers, FunSpec}
 import akka.testkit.TestActorRef
 
