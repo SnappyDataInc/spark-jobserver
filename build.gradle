@@ -55,42 +55,49 @@ dependencies {
 
   // always use stock spark so that snappy extensions don't get accidently
   // included here in jobserver code.
-  compileOnly("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-  }
-  compileOnly("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-  }
-  compileOnly("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-  }
-  compileOnly("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-  }
-  compileOnly("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
-  }
-  compileOnly("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
-    exclude(group: nettyGroup)
-    exclude(group: scalaMacros)
-    exclude(group: scalaTest)
-    exclude(group: 'org.scala-lang', module: 'scala-library')
-    exclude(group: 'org.scala-lang', module: 'scala-reflect')
+  if (System.properties.containsKey('ideaBuild') && new File(rootDir, 'spark/build.gradle').exists()) {
+    compile project(':snappy-spark:snappy-spark-core_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-catalyst_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-sql_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-mllib_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-streaming_' + scalaBinaryVersion)
+    compile project(':snappy-spark:snappy-spark-hive_' + scalaBinaryVersion)
+
+    compileOnly "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+    testCompile "org.eclipse.jetty:jetty-servlet:${jettyVersion}"
+  } else {
+    compileOnly("org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+    }
+    compileOnly("org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+    }
+    compileOnly("org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+    }
+    compileOnly("org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+    }
+    compileOnly("org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+    }
+    compileOnly("org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}") {
+      exclude(group: nettyGroup)
+      exclude(group: scalaMacros)
+      exclude(group: scalaTest)
+    }
+
+    testCompile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
+    testCompile "org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}"
   }
   compileOnly(group: 'io.dropwizard.metrics', name: 'metrics-core', version: metricsVersion) {
     exclude(group: 'org.slf4j', module: 'slf4j-api')
@@ -135,12 +142,6 @@ dependencies {
   compile "org.apache.shiro:shiro-core:${shiroVersion}"
   compile "com.typesafe:config:${typesafeConfigVersion}"
 
-  testCompile "org.apache.spark:spark-core_${scalaBinaryVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-catalyst_${scalaBinaryVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-sql_${scalaBinaryVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-mllib_${scalaBinaryVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-streaming_${scalaBinaryVersion}:${sparkVersion}"
-  testCompile "org.apache.spark:spark-hive_${scalaBinaryVersion}:${sparkVersion}"
   testCompile "${scalaTest}:scalatest_${scalaBinaryVersion}:${scalatestVersion}"
   testCompile("com.typesafe.akka:akka-testkit_${scalaBinaryVersion}:${akkaVersion}") {
     exclude(group: 'org.scala-lang', module: 'scala-library')
