@@ -83,7 +83,7 @@ Spark Job Server is now included in Datastax Enterprise 4.8!
 - [Newsweaver](https://www.newsweaver.com)
 - [Instaclustr](http://www.instaclustr.com)
 - [Linkfluence](http://www.linkfluence.com)
-- [SnappyData](http://www.snappydata.io)
+- [SnappyData](https://github.com/TIBCOSoftware/snappydata)
 
 ## Features
 

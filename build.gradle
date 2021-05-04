@@ -38,10 +38,12 @@ scalaStyle {
 }
 
 tasks.withType(ScalaCompile) {
-  scalaCompileOptions.additionalParameters = [ '-deprecation', '-feature', '-language:postfixOps', '-language:implicitConversions' ]
+  scalaCompileOptions.deprecation = false
+  scalaCompileOptions.additionalParameters = [ '-feature', '-language:postfixOps', '-language:implicitConversions' ]
 }
 tasks.withType(ScalaDoc) {
-  scalaDocOptions.additionalParameters = [ '-deprecation', '-feature', '-language:postfixOps', '-language:implicitConversions' ]
+  scalaDocOptions.deprecation = false
+  scalaDocOptions.additionalParameters = [ '-feature', '-language:postfixOps', '-language:implicitConversions' ]
 }
 
 dependencies {

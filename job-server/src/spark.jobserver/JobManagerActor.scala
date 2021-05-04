@@ -125,7 +125,8 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
   private val jobServerNamedObjects = new JobServerNamedObjects(context.system)
 
   override def postStop() {
-    logger.info("Shutting down SparkContext {}", contextName)
+    logger.info("Shutting down job context {} (type = {})", contextName,
+      if (jobContext ne null) jobContext.getClass.getName else "null")
     Option(jobContext).foreach(_.stop())
   }
 
