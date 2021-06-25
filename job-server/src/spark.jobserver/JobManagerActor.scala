@@ -125,9 +125,11 @@ class JobManagerActor(contextConfig: Config) extends InstrumentedActor {
   private val jobServerNamedObjects = new JobServerNamedObjects(context.system)
 
   override def postStop() {
-    logger.info("Shutting down job context {} (type = {})", contextName,
-      if (jobContext ne null) jobContext.getClass.getName else "null")
-    Option(jobContext).foreach(_.stop())
+    if (jobContext ne null) {
+      logger.info(
+        s"Shutting down job context $contextName (type = ${jobContext.getClass.getName})")
+      jobContext.stop()
+    }
   }
 
   def wrappedReceive: Receive = {
